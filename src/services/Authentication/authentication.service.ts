@@ -1,9 +1,11 @@
 import bcrypt from 'bcrypt';
+import JsonWebToken from 'jsonwebtoken';
 import { RowDataPacket } from "mysql2";
 import { Pool } from "mysql2/promise";
 import { pool } from "../../database/connection";
-import { SharedFunctions } from "../../shared/sharedFunctions";
-import { User, UserResponse } from "../../types/User";
+import { SharedFunctions } from '../../shared/sharedFunctions';
+import { User, UserLoginResponse } from "../../types/User";
+
 
 export class AuthenticationService {
     private db: Pool;
@@ -14,7 +16,7 @@ export class AuthenticationService {
         this.sharedFunctions = new SharedFunctions();
     }
 
-    async authenticateUser(email: string, password: string): Promise<UserResponse | null> {
+    async authenticateUser(email: string, password: string): Promise<UserLoginResponse | null> {
         try {
             const [rows] = await this.db.query<RowDataPacket[]>(
                 'SELECT * FROM users WHERE email = ?',
@@ -31,8 +33,10 @@ export class AuthenticationService {
             if (!passwordMatch) {
                 return null;
             }
+            const data = this.sharedFunctions.removePassword(user);
 
-            return this.sharedFunctions.removePassword(user);
+            const token = JsonWebToken.sign({ data }, process.env.JWT_SECRET as string);
+            return { token };
         } catch (error) {
             console.error('Error authenticating user:', error);
             throw new Error('Authentication failed');

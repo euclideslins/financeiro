@@ -1,166 +1,315 @@
-# 💰 Sistema Financeiro API
+# 💰 Sistema Financeiro - API
 
-Uma API REST simples e bem estruturada para gerenciamento de usuários, construída com Node.js, TypeScript, Express e MySQL.
-
-## 🏗️ Arquitetura
-
-```
-src/
-├── config/          # Configurações da aplicação
-├── controllers/     # Controladores (lógica das rotas)
-├── database/        # Conexão e configuração do banco
-├── middleware/      # Middlewares customizados
-├── models/          # Modelos de dados (futuro)
-├── routes/          # Definição das rotas
-├── services/        # Lógica de negócio
-├── types/           # Tipos TypeScript
-└── server.ts        # Ponto de entrada da aplicação
-```
+Sistema de gerenciamento financeiro desenvolvido com **Node.js**, **TypeScript**, **Express** e **MySQL**.
 
 ## 🚀 Tecnologias
 
-- **Node.js** - Runtime JavaScript
-- **TypeScript** - Superset tipado do JavaScript
-- **Express** - Framework web
-- **MySQL** - Banco de dados relacional
-- **Docker** - Containerização do banco de dados
+- **Node.js** + **TypeScript**
+- **Express.js** - Framework web
+- **MySQL** - Banco de dados
+- **bcrypt** - Criptografia de senhas
+- **Docker** - Containerização
+- **VS Code** - Debug configurado
 
 ## 📋 Pré-requisitos
 
-- Node.js (v18+)
-- Docker e Docker Compose
-- npm ou yarn
+- **Node.js** 18+
+- **Docker** e **Docker Compose**
+- **VS Code** (recomendado para debug)
 
-## 🔧 Instalação
+## 🛠️ Instalação
 
-1. **Clone o repositório**
-   ```bash
-   git clone <url-do-repo>
-   cd financeiro
-   ```
-
-2. **Instale as dependências**
-   ```bash
-   npm install
-   ```
-
-3. **Configure as variáveis de ambiente**
-   ```bash
-   # O arquivo .env já existe com as configurações padrão
-   # Ajuste conforme necessário
-   ```
-
-4. **Inicie o banco de dados**
-   ```bash
-   docker-compose up -d
-   ```
-
-5. **Execute as migrations** (criar tabelas)
-   ```bash
-   # Execute o script SQL para criar as tabelas
-   docker exec -i mysql-db mysql -u euclides -prootpassword financeiro < init.sql
-   ```
-
-6. **Inicie o servidor**
-   ```bash
-   npm run dev
-   ```
-
-## 🛠️ Scripts Disponíveis
-
-- `npm run dev` - Executa em modo desenvolvimento com hot reload
-- `npm start` - Executa em modo produção
-- `npm test` - Executa os testes (a implementar)
-
-## 📚 Endpoints da API
-
-### Health Check
-- `GET /health` - Verifica se a API está funcionando
-
-### Usuários
-- `GET /api/users` - Lista todos os usuários
-- `GET /api/users/:id` - Busca usuário por ID
-- `POST /api/users` - Cria novo usuário (com senha criptografada)
-- `POST /api/users/login` - Autentica usuário
-- `PUT /api/users/:id` - Atualiza usuário (incluindo senha)
-- `DELETE /api/users/:id` - Remove usuário
-
-### Exemplos de Uso
-
-**Criar usuário:**
 ```bash
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name": "João Silva", "email": "joao@email.com", "password": "minhasenha123"}'
+# Clone o repositório
+git clone <url-do-repositorio>
+cd financeiro
+
+# Instale as dependências
+npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+
+# Inicie o banco de dados
+npm run docker:up
+
+# Execute as migrations
+npm run db:init
+
+# Inicie o servidor de desenvolvimento
+npm run dev
 ```
 
-**Login de usuário:**
+## 🐛 Debug no VS Code
+
+### **Configurações Disponíveis:**
+
+O projeto já vem configurado com múltiplas opções de debug:
+
+1. **🚀 Debug Server (ts-node)** - Debug direto com ts-node
+2. **🔧 Debug with Nodemon** - Debug com hot reload
+3. **🐛 Attach to Running Process** - Conectar a processo em execução
+4. **🧪 Debug Current File** - Debug do arquivo atual
+
+### **Como usar o debugger:**
+
+1. **Pressione `F5`** ou vá em `Run and Debug` (Ctrl+Shift+D)
+2. **Selecione** a configuração desejada
+3. **Coloque breakpoints** clicando na margem esquerda das linhas
+4. **Inicie o debug** clicando no botão play
+
+### **Comandos úteis:**
+- **F5**: Continuar execução
+- **F10**: Step Over (próxima linha)
+- **F11**: Step Into (entrar na função)
+- **Shift+F11**: Step Out (sair da função)
+- **Ctrl+Shift+F5**: Restart
+
+### **Scripts de debug:**
 ```bash
-curl -X POST http://localhost:3000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "joao@email.com", "password": "minhasenha123"}'
+# Debug com nodemon (hot reload)
+npm run dev:debug
+
+# Debug normal
+npm run dev
 ```
 
-**Listar usuários:**
-```bash
-curl http://localhost:3000/api/users
-```
+## 🔐 Sistema de Autenticação
 
-## 📦 Estrutura de Resposta
+### **Funcionalidades de Segurança:**
 
-Todas as respostas seguem o padrão:
+- ✅ **Senhas criptografadas** com bcrypt (salt rounds: 12)
+- ✅ **Middleware de autenticação** por token
+- ✅ **Validação robusta** de entrada de dados
+- ✅ **Senhas nunca expostas** nas respostas da API
 
-```json
+### **Endpoints de Autenticação:**
+
+#### **📝 Registrar Usuário**
+```http
+POST /api/users
+Content-Type: application/json
+
 {
-  "data": "...",      // Dados solicitados (opcional)
-  "message": "...",   // Mensagem descritiva
-  "success": true,    // Status da operação
-  "error": "..."      // Mensagem de erro (opcional)
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "minhasenha123"
 }
 ```
 
-## 🔍 Características da Arquitetura
+**Resposta:**
+```json
+{
+  "success": true,
+  "message": "User created successfully",
+  "data": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "created_at": "2025-09-01T10:00:00.000Z",
+    "updated_at": "2025-09-01T10:00:00.000Z"
+  }
+}
+```
 
-### ✅ **Separação de Responsabilidades**
-- **Controllers**: Gerenciam requisições HTTP
-- **Services**: Contêm lógica de negócio
-- **Routes**: Definem endpoints e middlewares
-- **Middleware**: Validações e tratamento de erros
+#### **🔑 Login**
+```http
+POST /api/users/login
+Content-Type: application/json
 
-### ✅ **Tipagem Forte**
-- Interfaces TypeScript para todas as entidades
-- DTOs para transferência de dados
-- Tipos para respostas da API
+{
+  "email": "joao@email.com",
+  "password": "minhasenha123"
+}
+```
 
-### ✅ **Tratamento de Erros**
-- Middleware global de erro
-- Respostas padronizadas
-- Logs estruturados
+**Resposta de Sucesso:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "João Silva",
+      "email": "joao@email.com"
+    },
+    "token": "jwt-token-aqui"
+  }
+}
+```
 
-### ✅ **Validações**
-- Validação de entrada nos middlewares
-- Sanitização de dados
-- Feedback claro de erros
+**Resposta de Erro:**
+```json
+{
+  "success": false,
+  "message": "Invalid credentials",
+  "error": "Email or password incorrect"
+}
+```
 
-### ✅ **Configuração Flexível**
-- Variáveis de ambiente
-- Configuração centralizada
-- Diferentes ambientes (dev/prod)
+### **Rotas Protegidas:**
 
-### ✅ **Segurança**
-- Senhas criptografadas com bcrypt (salt rounds: 12)
-- Senhas nunca retornadas nas respostas da API
-- Validação robusta de entrada de dados
-- Hash seguro para armazenamento de senhas
+As seguintes rotas requerem **autenticação por token**:
 
-## 🚧 Próximos Passos
+- `GET /api/users` - Listar usuários
+- `GET /api/users/:id` - Buscar usuário por ID
+- `POST /api/users` - Criar usuário (requer token)
+- `PUT /api/users/:id` - Atualizar usuário
+- `DELETE /api/users/:id` - Deletar usuário
 
-- [ ] Implementar autenticação JWT
-- [ ] Adicionar testes unitários e de integração
-- [ ] Documentação com Swagger
-- [ ] Rate limiting
-- [ ] Cache com Redis
-- [ ] Logs estruturados
+### **Como usar autenticação:**
+
+```http
+GET /api/users
+Authorization: Bearer seu-jwt-token-aqui
+```
+
+### **Validações de Senha:**
+
+- ✅ **Mínimo 6 caracteres**
+- ✅ **Campo obrigatório**
+- ✅ **Hash automático** no cadastro/atualização
+
+## 📚 API Endpoints
+
+### **👤 Usuários**
+
+| Método | Endpoint | Descrição | Auth | Validação |
+|--------|----------|-----------|------|-----------|
+| `GET` | `/api/users` | Listar usuários | ✅ | - |
+| `GET` | `/api/users/:id` | Buscar por ID | ✅ | - |
+| `POST` | `/api/users` | Criar usuário | ✅ | `validateCreateUser` |
+| `POST` | `/api/users/login` | Login | ❌ | - |
+| `PUT` | `/api/users/:id` | Atualizar | ✅ | `validateUpdateUser` |
+| `DELETE` | `/api/users/:id` | Deletar | ✅ | - |
+
+### **🏥 Health Check**
+
+```http
+GET /health
+```
+
+**Resposta:**
+```json
+{
+  "status": "OK",
+  "timestamp": "2025-09-01T10:00:00.000Z",
+  "uptime": 123.456
+}
+```
+
+## 🗄️ Banco de Dados
+
+### **Scripts úteis:**
+
+```bash
+# Subir o banco
+npm run docker:up
+
+# Logs do banco
+npm run docker:logs
+
+# Parar o banco
+npm run docker:down
+
+# Executar migrations
+npm run db:init
+```
+
+### **Estrutura da tabela users:**
+
+```sql
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+## 🔧 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev              # Servidor com hot reload
+npm run dev:debug        # Servidor com debug habilitado
+npm start               # Servidor de produção
+
+# Build
+npm run build           # Compilar TypeScript
+
+# Docker
+npm run docker:up       # Subir containers
+npm run docker:down     # Parar containers  
+npm run docker:logs     # Ver logs dos containers
+
+# Banco de dados
+npm run db:init         # Executar migrations
+```
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── controllers/        # Controllers da API
+├── services/          # Regras de negócio
+├── routes/            # Definição das rotas
+├── middleware/        # Middlewares personalizados
+├── database/          # Configuração do banco
+├── config/            # Configurações gerais
+├── types/             # Interfaces TypeScript
+└── server.ts          # Arquivo principal
+
+.vscode/               # Configurações do VS Code
+├── launch.json        # Configurações de debug
+├── settings.json      # Configurações do workspace
+└── tasks.json         # Tasks automatizadas
+```
+
+## 🚀 Exemplo de Uso Completo
+
+```bash
+# 1. Criar um usuário
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "password": "minhasenha123"
+  }'
+
+# 2. Fazer login
+curl -X POST http://localhost:3000/api/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@email.com",
+    "password": "minhasenha123"
+  }'
+
+# 3. Listar usuários (com token)
+curl -X GET http://localhost:3000/api/users \
+  -H "Authorization: Bearer seu-jwt-token-aqui"
+```
+
+## 🔒 Segurança
+
+- **Senhas criptografadas** com bcrypt
+- **Validação de entrada** em todos os endpoints
+- **Middleware de autenticação** configurado
+- **Variáveis de ambiente** para dados sensíveis
+- **Headers de segurança** configurados
+- **Rate limiting** (recomendado implementar)
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -am 'Add nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
 
 ## 📄 Licença
 

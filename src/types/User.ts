@@ -11,8 +11,11 @@ export interface UserResponse {
   id: number;
   name: string;
   email: string;
-  created_at: Date;
-  updated_at: Date;
+}
+
+export interface UserLoginResponse {
+  token: string;
+  iat?: number;
 }
 
 export interface CreateUserDTO {
