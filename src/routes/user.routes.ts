@@ -1,9 +1,20 @@
-import express from 'express';
+import { Router } from 'express';
+import { UserController } from '../controllers/UserController';
+import { validateCreateUser, validateUpdateUser } from '../middleware/validation';
 
-const UserRouter = express.Router();
+const userRouter = Router();
+const userController = new UserController();
 
-UserRouter.get('/', (req, res) => {
-  res.send('User route');
-});
+userRouter.get('/', userController.getAllUsers);
 
-export default UserRouter;
+userRouter.get('/:id', userController.getUserById);
+
+userRouter.post('/', validateCreateUser, userController.createUser);
+
+userRouter.post('/login', userController.loginUser);
+
+userRouter.put('/:id', validateUpdateUser, userController.updateUser);
+
+userRouter.delete('/:id', userController.deleteUser);
+
+export default userRouter;
