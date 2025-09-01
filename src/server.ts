@@ -3,6 +3,7 @@ import express from 'express';
 import morgan from 'morgan';
 import { serverConfig } from './config/database';
 import { testConnection } from './database/connection';
+import { testConnectionRedis } from './database/connection-redis';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import userRouter from './routes/user.routes';
 
@@ -37,9 +38,15 @@ declare global {
 const startServer = async () => {
   try {
     const dbConnected = await testConnection();
+    const redisConnected = await testConnectionRedis();
 
     if (!dbConnected) {
       console.error('❌ Failed to connect to database. Exiting...');
+      process.exit(1);
+    }
+
+    if (!redisConnected) {
+      console.error('❌ Failed to connect to Redis. Exiting...');
       process.exit(1);
     }
 
