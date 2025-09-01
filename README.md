@@ -1,14 +1,15 @@
 # 💰 Sistema Financeiro - API
 
-Sistema de gerenciamento financeiro desenvolvido com **Node.js**, **TypeScript**, **Express** e **MySQL**.
+Sistema de gerenciamento financeiro desenvolvido com **Node.js**, **TypeScript**, **Express**, **MySQL** e **Redis**.
 
 ## 🚀 Tecnologias
 
 - **Node.js** + **TypeScript**
 - **Express.js** - Framework web
-- **MySQL** - Banco de dados
+- **MySQL 8.0** - Banco de dados principal
+- **Redis 7.2** - Cache em memória
 - **bcrypt** - Criptografia de senhas
-- **Docker** - Containerização
+- **Docker** + **Docker Compose** - Containerização
 - **VS Code** - Debug configurado
 
 ## 📋 Pré-requisitos
@@ -30,7 +31,7 @@ npm install
 # Configure as variáveis de ambiente
 cp .env.example .env
 
-# Inicie o banco de dados
+# Inicie os serviços (MySQL + Redis)
 npm run docker:up
 
 # Execute as migrations
@@ -82,6 +83,7 @@ npm run dev
 - ✅ **Middleware de autenticação** por token
 - ✅ **Validação robusta** de entrada de dados
 - ✅ **Senhas nunca expostas** nas respostas da API
+- ✅ **Cache inteligente** com Redis
 
 ### **Endpoints de Autenticação:**
 
@@ -171,18 +173,45 @@ Authorization: Bearer seu-jwt-token-aqui
 - ✅ **Campo obrigatório**
 - ✅ **Hash automático** no cadastro/atualização
 
+## 🚀 Sistema de Cache com Redis
+
+### **Funcionalidades do Cache:**
+
+- ✅ **Cache automático** de consultas de usuários
+- ✅ **Cache hit logging** para monitoramento
+- ✅ **Invalidação inteligente** de cache
+- ✅ **Performance otimizada** para consultas frequentes
+
+### **Como funciona:**
+
+1. **Primeira consulta**: Busca no MySQL e salva no Redis
+2. **Consultas subsequentes**: Retorna direto do Redis (muito mais rápido)
+3. **Cache keys**: 
+   - `users:all` - Lista de todos os usuários
+   - `users:{id}` - Usuário específico por ID
+
+### **Logs de Cache:**
+```bash
+✅ Redis cache hit  # Quando encontra dados no cache
+```
+
+### **Benefícios:**
+- **📈 Performance**: Consultas até 100x mais rápidas
+- **🔄 Menos carga no MySQL**: Reduz consultas no banco principal
+- **⚡ Resposta instantânea**: Cache em memória
+
 ## 📚 API Endpoints
 
 ### **👤 Usuários**
 
-| Método | Endpoint | Descrição | Auth | Validação |
-|--------|----------|-----------|------|-----------|
-| `GET` | `/api/users` | Listar usuários | ✅ | - |
-| `GET` | `/api/users/:id` | Buscar por ID | ✅ | - |
-| `POST` | `/api/users` | Criar usuário | ✅ | `validateCreateUser` |
-| `POST` | `/api/users/login` | Login | ❌ | - |
-| `PUT` | `/api/users/:id` | Atualizar | ✅ | `validateUpdateUser` |
-| `DELETE` | `/api/users/:id` | Deletar | ✅ | - |
+| Método | Endpoint | Descrição | Auth | Cache | Validação |
+|--------|----------|-----------|------|-------|-----------|
+| `GET` | `/api/users` | Listar usuários | ✅ | ✅ | - |
+| `GET` | `/api/users/:id` | Buscar por ID | ✅ | ✅ | - |
+| `POST` | `/api/users` | Criar usuário | ✅ | ❌ | `validateCreateUser` |
+| `POST` | `/api/users/login` | Login | ❌ | ❌ | - |
+| `PUT` | `/api/users/:id` | Atualizar | ✅ | ❌ | `validateUpdateUser` |
+| `DELETE` | `/api/users/:id` | Deletar | ✅ | ❌ | - |
 
 ### **🏥 Health Check**
 
@@ -201,19 +230,24 @@ GET /health
 
 ## 🗄️ Banco de Dados
 
+### **Serviços Containerizados:**
+
+- **MySQL 8.0**: Banco principal na porta `3306`
+- **Redis 7.2**: Cache em memória na porta `6379`
+
 ### **Scripts úteis:**
 
 ```bash
-# Subir o banco
+# Subir todos os serviços (MySQL + Redis)
 npm run docker:up
 
-# Logs do banco
+# Logs dos serviços
 npm run docker:logs
 
-# Parar o banco
+# Parar todos os serviços
 npm run docker:down
 
-# Executar migrations
+# Executar migrations no MySQL
 npm run db:init
 ```
 
@@ -230,6 +264,52 @@ CREATE TABLE users (
 );
 ```
 
+### **Configuração do Redis:**
+
+```yaml
+# docker-compose.yaml
+redis:
+  image: redis:7.2
+  container_name: redis-db
+  restart: always
+  ports:
+    - "6379:6379"
+  volumes:
+    - redis_data:/data
+  command: ["redis-server", "--appendonly", "yes"]
+```
+
+## 🏗️ Arquitetura do Sistema
+
+### **Padrão de Arquitetura:**
+
+```
+📊 Client Request
+    ↓
+🛡️ Middleware (Auth/Validation)
+    ↓
+🎯 Controller (Route Handler)
+    ↓
+⚡ Cache Check (Redis)
+    ↓ (se não houver cache)
+🔧 Service (Business Logic)
+    ↓
+🗄️ Database (MySQL)
+    ↓
+💾 Cache Set (Redis)
+    ↓
+📤 Response
+```
+
+### **Camadas da Aplicação:**
+
+- **🛡️ Middleware**: Autenticação, validação, tratamento de erros
+- **🎯 Controllers**: Manipulação de requests/responses
+- **🔧 Services**: Regras de negócio e lógica
+- **📊 Shared Functions**: Utilitários reutilizáveis
+- **🗄️ Database**: Conexão e queries MySQL
+- **⚡ Cache**: Sistema Redis para performance
+
 ## 🔧 Scripts Disponíveis
 
 ```bash
@@ -242,7 +322,7 @@ npm start               # Servidor de produção
 npm run build           # Compilar TypeScript
 
 # Docker
-npm run docker:up       # Subir containers
+npm run docker:up       # Subir containers (MySQL + Redis)
 npm run docker:down     # Parar containers  
 npm run docker:logs     # Ver logs dos containers
 
@@ -255,24 +335,46 @@ npm run db:init         # Executar migrations
 ```
 src/
 ├── controllers/        # Controllers da API
+│   └── UserController.ts
 ├── services/          # Regras de negócio
+│   └── Users/
+│       ├── getUser.service.ts
+│       ├── createUser.service.ts
+│       ├── updateUser.service.ts
+│       └── deleteUser.service.ts
 ├── routes/            # Definição das rotas
+│   └── user.routes.ts
 ├── middleware/        # Middlewares personalizados
+│   ├── Authentication/
+│   ├── validation/
+│   └── errorHandler.ts
+├── shared/            # Funções utilitárias
+│   └── sharedFunctions.ts
 ├── database/          # Configuração do banco
+│   └── connection.ts
 ├── config/            # Configurações gerais
+│   ├── database.ts
+│   └── redis.ts
 ├── types/             # Interfaces TypeScript
+│   └── User.ts
 └── server.ts          # Arquivo principal
 
 .vscode/               # Configurações do VS Code
 ├── launch.json        # Configurações de debug
 ├── settings.json      # Configurações do workspace
 └── tasks.json         # Tasks automatizadas
+
+docker-compose.yaml    # Orquestração dos containers
+init.sql              # Scripts de inicialização do banco
 ```
 
 ## 🚀 Exemplo de Uso Completo
 
 ```bash
-# 1. Criar um usuário
+# 1. Subir os serviços
+npm run docker:up
+
+# 2. Criar um usuário
 curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d '{
@@ -281,7 +383,7 @@ curl -X POST http://localhost:3000/api/users \
     "password": "minhasenha123"
   }'
 
-# 2. Fazer login
+# 3. Fazer login
 curl -X POST http://localhost:3000/api/users/login \
   -H "Content-Type: application/json" \
   -d '{
@@ -289,19 +391,72 @@ curl -X POST http://localhost:3000/api/users/login \
     "password": "minhasenha123"
   }'
 
-# 3. Listar usuários (com token)
+# 4. Listar usuários (primeira vez: MySQL)
+curl -X GET http://localhost:3000/api/users \
+  -H "Authorization: Bearer seu-jwt-token-aqui"
+
+# 5. Listar usuários novamente (segunda vez: Redis cache ⚡)
 curl -X GET http://localhost:3000/api/users \
   -H "Authorization: Bearer seu-jwt-token-aqui"
 ```
 
+## ⚡ Performance e Otimizações
+
+### **Cache Strategy:**
+- **Cache Hit Rate**: Monitorado via logs
+- **TTL**: Configurável por tipo de dados
+- **Invalidação**: Automática em updates/deletes
+
+### **Database Optimization:**
+- **Connection Pooling**: MySQL configurado
+- **Indexes**: Otimizados para consultas frequentes
+- **Query Optimization**: Prepared statements
+
+### **Memory Management:**
+- **Redis**: Persistência com AOF (Append Only File)
+- **Connection Pooling**: Reutilização de conexões
+- **Garbage Collection**: Node.js otimizado
+
 ## 🔒 Segurança
 
-- **Senhas criptografadas** com bcrypt
+- **Senhas criptografadas** com bcrypt (salt rounds: 12)
 - **Validação de entrada** em todos os endpoints
 - **Middleware de autenticação** configurado
 - **Variáveis de ambiente** para dados sensíveis
 - **Headers de segurança** configurados
-- **Rate limiting** (recomendado implementar)
+- **Cache seguro** - senhas nunca em cache
+- **SQL Injection**: Proteção com prepared statements
+
+## 🔍 Monitoramento
+
+### **Logs Estruturados:**
+```bash
+✅ Database connected successfully
+✅ Redis connected successfully  
+✅ Redis cache hit
+🚀 Server running on port 3000
+```
+
+### **Health Checks:**
+- Database connectivity
+- Redis connectivity
+- Server uptime
+- Memory usage
+
+## 📈 Escalabilidade
+
+### **Atual (Pequena/Média escala):**
+- ✅ Arquitetura em camadas
+- ✅ Cache Redis implementado
+- ✅ Connection pooling
+- ✅ TypeScript type safety
+
+### **Próximos passos (Grande escala):**
+- 🔄 Implementar JWT
+- 🔄 Rate limiting
+- 🔄 Microserviços
+- 🔄 Load balancer
+- 🔄 Monitoring (Prometheus/Grafana)
 
 ## 🤝 Contribuição
 
@@ -314,3 +469,16 @@ curl -X GET http://localhost:3000/api/users \
 ## 📄 Licença
 
 Este projeto está sob a licença ISC.
+
+---
+
+### 📊 **Status do Projeto**
+
+- ✅ **CRUD Completo** - Usuários
+- ✅ **Autenticação** - Login/Register
+- ✅ **Cache Redis** - Performance otimizada
+- ✅ **Debug VS Code** - Ambiente de desenvolvimento
+- ✅ **Docker** - Containerização completa
+- ✅ **TypeScript** - Type safety
+- 🔄 **JWT** - Em desenvolvimento
+- 🔄 **Testes** - Planejado
