@@ -452,7 +452,6 @@ curl -X GET http://localhost:3000/api/users \
 - ✅ TypeScript type safety
 
 ### **Próximos passos (Grande escala):**
-- 🔄 Implementar JWT
 - 🔄 Rate limiting
 - 🔄 Microserviços
 - 🔄 Load balancer
