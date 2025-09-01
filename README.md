@@ -479,5 +479,4 @@ Este projeto está sob a licença ISC.
 - ✅ **Debug VS Code** - Ambiente de desenvolvimento
 - ✅ **Docker** - Containerização completa
 - ✅ **TypeScript** - Type safety
-- 🔄 **JWT** - Em desenvolvimento
 - 🔄 **Testes** - Planejado
