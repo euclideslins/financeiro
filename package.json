@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec ts-node src/server.ts",
     "dev:debug": "nodemon --exec \"node --inspect=0.0.0.0:9229 -r ts-node/register -r dotenv/config src/server.ts\"",
     "start": "ts-node src/server.ts",
@@ -12,7 +11,11 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "db:init": "docker exec -i mysql-db mysql -u euclides -prootpassword financeiro < init.sql"
+    "db:init": "docker exec -i mysql-db mysql -u euclides -prootpassword financeiro < init.sql",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci"
   },
   "keywords": [],
   "author": "",
@@ -37,10 +40,14 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@jest/globals": "^30.1.2",
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/eslint": "^9.6.1",
     "@types/express": "^5.0.3",
-    "eslint": "^9.34.0"
+    "@types/jest": "^30.0.0",
+    "eslint": "^9.34.0",
+    "jest": "^30.1.2",
+    "ts-jest": "^29.4.1"
   }
 }

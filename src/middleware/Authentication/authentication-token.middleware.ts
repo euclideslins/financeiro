@@ -2,8 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import jsonwebToken from 'jsonwebtoken';
 import { unauthorizedHandler } from '../../shared/errors/login.error';
 
-
-
 export class AuthenticationTokenMiddleware {
     public use(req: Request, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];
