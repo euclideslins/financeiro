@@ -3,3 +3,6 @@
 /coverage
 .env
 package-lock.json
+
+/llm/package-lock.json
+/llm/node_modules

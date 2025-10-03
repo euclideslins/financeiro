@@ -11,4 +11,21 @@ CREATE TABLE users (
 INSERT INTO users (name, email, password_hash)
 VALUES ('Euclides Lins de Vasconcelos', 'euclides@example.com', '$2b$12$38gMGXVf.p5Agt7ZhOElaOP4Brey6g0LgV4zkI/nQj5C3B0g9YDpO');
 
-## Essa senha é um hash bcrypt da senha "banana"
+ -- ## Essa senha é um hash bcrypt da senha "banana"
+
+
+-- 2) ACCOUNTS (contas à vista: carteira, corrente, poupança)
+CREATE TABLE accounts (
+  id                     BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id                BIGINT UNSIGNED NOT NULL,
+  name                   VARCHAR(80) NOT NULL,
+  type                   ENUM('wallet','current','savings') NOT NULL DEFAULT 'current',
+  currency_code          CHAR(3) NOT NULL DEFAULT 'BRL',
+  opening_balance_cents  BIGINT NOT NULL DEFAULT 0,
+  created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at             DATETIME NULL,
+  CONSTRAINT fk_accounts_user FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE INDEX idx_accounts_user ON accounts(user_id);
