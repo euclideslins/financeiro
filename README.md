@@ -322,6 +322,65 @@ Authorization: Bearer seu-jwt-token-aqui
 | `PUT` | `/api/users/:id` | Atualizar | ✅ | ❌ | `validateUpdateUser` | 🔄 |
 | `DELETE` | `/api/users/:id` | Deletar | ✅ | ❌ | - | 🔄 |
 
+### **🏦 Contas (Accounts)**
+
+| Método | Endpoint | Descrição | Auth | Validação |
+|--------|----------|-----------|------|-----------|
+| `POST` | `/api/accounts/create/:userId` | Criar conta para usuário | ❌ | - |
+| `GET` | `/api/accounts` | Listar todas as contas | ✅ | - |
+| `GET` | `/api/accounts/:id` | Buscar conta por ID | ❌ | - |
+| `PUT` | `/api/accounts/:id` | Atualizar nome da conta | ❌ | - |
+
+> **Nota:** Apenas a rota de listagem de contas (`GET /api/accounts`) exige autenticação JWT. As demais podem ser protegidas conforme necessidade futura.
+
+#### **Exemplo de uso das rotas de contas:**
+```http
+POST /api/accounts/create/1
+Content-Type: application/json
+
+{}
+
+# Resposta:
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": null
+}
+```
+
+```http
+GET /api/accounts
+Authorization: Bearer seu-jwt-token-aqui
+
+# Resposta:
+{
+  "success": true,
+  "message": "Accounts retrieved successfully",
+  "data": [
+    {
+      "user_id": 1,
+      "name": "New Account",
+      "type": "current",
+      "created_at": "2024-06-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+```http
+PUT /api/accounts/1
+Content-Type: application/json
+
+{
+  "name": "Conta Corrente"
+}
+
+# Resposta:
+{
+  "message": "Account updated successfully"
+}
+```
+
 ### **🏥 Health Check**
 
 ```http
@@ -399,13 +458,13 @@ redis:
     ↓
 🎯 Controller (Route Handler)
     ↓
-⚡ Cache Check (Redis)
+⚡ Cache Check (Redis) [apenas usuários]
     ↓ (se não houver cache)
 🔧 Service (Business Logic)
     ↓
 🗄️ Database (MySQL)
     ↓
-💾 Cache Set (Redis)
+💾 Cache Set (Redis) [apenas usuários]
     ↓
 📤 Response
 ```
@@ -450,16 +509,22 @@ npm run db:init         # Executar migrations
 
 ```
 src/
-├── controllers/        # Controllers da API
-│   └── UserController.ts
-├── services/          # Regras de negócio
-│   └── Users/
-│       ├── getUser.service.ts
-│       ├── createUser.service.ts
-│       ├── updateUser.service.ts
-│       └── deleteUser.service.ts
-├── routes/            # Definição das rotas
-│   └── user.routes.ts
+├── controllers/
+│   ├── UserController.ts
+│   └── accounts-controller.ts
+├── services/
+│   ├── Users/
+│   │   ├── getUser.service.ts
+│   │   ├── create-user.service.ts
+│   │   ├── updateUser.service.ts
+│   │   └── deleteUser.service.ts
+│   └── Accounts/
+│       ├── get-account.service.ts
+│       ├── create-account.service.ts
+│       └── update-account.service.ts
+├── routes/
+│   ├── user.routes.ts
+│   └── account.routes.ts
 ├── middleware/        # Middlewares personalizados
 │   ├── Authentication/
 │   │   └── authentication-token.middleware.ts
