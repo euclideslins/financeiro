@@ -6,6 +6,7 @@ import { testConnection } from './database/connection';
 import { testConnectionRedis } from './database/connection-redis';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import accountRouter from './routes/account.routes';
+import categoryRouter from './routes/category.routes';
 import userRouter from './routes/user.routes';
 
 const app = express();
@@ -25,6 +26,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/users', userRouter);
 app.use('/api/accounts', accountRouter);
+app.use('/api/categories', categoryRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -29,3 +29,26 @@ CREATE TABLE accounts (
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE INDEX idx_accounts_user ON accounts(user_id);
+
+
+-- 3) CATEGORIES (categorias de receitas e despesas)
+CREATE TABLE categories (
+  id          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id     BIGINT UNSIGNED NOT NULL,
+  parent_id   BIGINT UNSIGNED NULL,
+  name        VARCHAR(80) NOT NULL,
+  kind        ENUM('expense','income') NOT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at  DATETIME NULL,
+
+  -- Constraints
+  CONSTRAINT fk_cat_user   FOREIGN KEY (user_id)  REFERENCES users(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_cat_parent FOREIGN KEY (parent_id) REFERENCES categories(id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT uq_cat_user_parent_name UNIQUE (user_id, parent_id, name),
+
+  -- Indexes
+  INDEX idx_categories_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
