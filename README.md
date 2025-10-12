@@ -734,3 +734,86 @@ Este projeto está sob a licença ISC.
 - **Code Quality**: TypeScript + ESLint
 - **Documentation**: README completo + comentários
 - **CI/CD**: Scripts de teste prontos
+
+## 🗂️ Categorias (Categories)
+
+Adicionado suporte a categorias para transações/contas — CRUD básico e validação.
+
+Endpoints de Categories:
+
+| Método | Endpoint | Descrição | Auth | Validação |
+|--------|----------|-----------|------|-----------|
+| `GET`  | `/api/categories`         | Listar todas as categorias             | ✅ | - |
+| `GET`  | `/api/categories/:id`     | Buscar categoria por ID                | ✅ | - |
+| `POST` | `/api/categories`         | Criar nova categoria                   | ✅ | `validateCreateCategory` |
+| `PUT`  | `/api/categories/:id`     | Atualizar categoria                   | ✅ | `validateUpdateCategory` |
+| `DELETE` | `/api/categories/:id`   | Deletar categoria (soft delete)       | ✅ | - |
+
+Exemplo: criar categoria
+```http
+POST /api/categories
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Alimentação",
+  "type": "expense"   // expense | income | transfer
+}
+```
+
+Resposta de sucesso:
+```json
+{
+  "success": true,
+  "message": "Category created successfully",
+  "data": {
+    "id": 1,
+    "name": "Alimentação",
+    "type": "expense"
+  }
+}
+```
+
+Comportamento e detalhes:
+- Categorias possuem: id, name, type (expense|income|transfer), created_at, updated_at, deleted_at (soft delete).
+- Rotas protegidas por JWT (mesmo padrão de autenticação dos usuários).
+- Validação de payload com middleware (verifica name não vazio, type válido).
+- Soft delete para manter histórico.
+- Cache opcional (não obrigatório por padrão) — pode ser implementado conforme necessidade.
+
+Estrutura de arquivos adicionada:
+```
+src/
+├── controllers/
+│   └── categories-controller.ts
+├── services/
+│   └── Categories/
+│       ├── get-category.service.ts
+│       ├── create-category.service.ts
+│       ├── update-category.service.ts
+│       └── delete-category.service.ts
+├── routes/
+│   └── category.routes.ts
+├── middleware/
+│   └── validation/
+│       └── categoryValidation.ts
+```
+
+Testes:
+- Unit tests para Services (cache, DB errors, validação).
+- Integration tests recomendadas para assegurar constraints de DB.
+
+Como usar localmente:
+```bash
+# Subir infra (MySQL + Redis)
+npm run docker:up
+
+# Rodar migrations
+npm run db:init
+
+# Iniciar servidor
+npm run dev
+
+# Executar testes de categories
+npm test -- --testNamePattern="Category"
+```
