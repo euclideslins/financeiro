@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { Pool } from "mysql2/promise";
+import { redisClient } from "../../config/redis";
 import { pool } from "../../database/connection";
 import { UpdateUserDTO, UserResponse } from "../../types/User";
 import { GetUserService } from "./getUser.service";
@@ -47,6 +48,9 @@ export class UpdateUserService {
                 `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
+
+            await redisClient.del('users:all');
+            await redisClient.del(`users:${id}`);
 
             return this.getUserService.getUserById(id);
         } catch (error) {

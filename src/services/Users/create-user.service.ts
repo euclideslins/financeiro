@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { Pool, RowDataPacket } from "mysql2/promise";
+import { redisClient } from "../../config/redis";
 import { pool } from "../../database/connection";
 import { CreateUserDTO, UserResponse } from "../../types/User";
 import { GetUserService } from './getUser.service';
@@ -27,6 +28,9 @@ export class CreateUserService {
             );
 
             const insertId = (result as any).insertId;
+
+            await redisClient.del('users:all');
+
             const newUser = await this.getUserService.getUserById(insertId);
 
             if (!newUser) {

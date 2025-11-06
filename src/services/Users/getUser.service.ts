@@ -23,7 +23,7 @@ export class GetUserService {
             const [rows] = await this.db.query<RowDataPacket[]>('SELECT * FROM users ORDER BY created_at DESC');
             const users = rows as User[];
 
-            await redisClient.set(`users:all`, JSON.stringify(users));
+            await redisClient.setEx('users:all', 3600, JSON.stringify(users));
 
             return users.map(user => this.sharedFunctions.removePassword(user));
         } catch (error) {
@@ -41,7 +41,7 @@ export class GetUserService {
             if (rows.length === 0) return null;
 
             const user = rows[0] as User;
-            await redisClient.set(`users:${id}`, JSON.stringify(user));
+            await redisClient.setEx(`users:${id}`, 3600, JSON.stringify(user));
             return this.sharedFunctions.removePassword(user);
         } catch (error) {
             console.error('Error fetching user by id:', error);
