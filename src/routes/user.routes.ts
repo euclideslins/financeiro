@@ -13,7 +13,9 @@ userRouter.get('/', authenticationTokenMiddleware.use, userController.getAllUser
 
 userRouter.get('/:id', authenticationTokenMiddleware.use, userController.getUserById);
 
-userRouter.post('/', validateCreateUser, authenticationTokenMiddleware.use, userController.createUser);
+userRouter.post('/register', validateCreateUser, userController.createUser);
+
+userRouter.post('/', authenticationTokenMiddleware.use, validateCreateUser, userController.createUser);
 
 userRouter.post('/login', userController.loginUser);
 
