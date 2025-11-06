@@ -52,3 +52,6 @@ CREATE TABLE categories (
   -- Indexes
   INDEX idx_categories_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+ALTER TABLE users ADD UNIQUE INDEX idx_email (email);
