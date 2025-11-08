@@ -35,7 +35,7 @@ export class AuthenticationService {
             }
             const data = this.sharedFunctions.removePassword(user);
 
-            const token = JsonWebToken.sign({ data }, process.env.JWT_SECRET as string);
+            const token = JsonWebToken.sign({ data }, process.env.JWT_SECRET as string, { expiresIn: '12h' });
             return { token };
         } catch (error) {
             console.error('Error authenticating user:', error);
