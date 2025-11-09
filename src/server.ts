@@ -9,6 +9,11 @@ import accountRouter from './routes/account.routes';
 import categoryRouter from './routes/category.routes';
 import userRouter from './routes/user.routes';
 
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is required in environment variables. Exiting...');
+  process.exit(1);
+}
+
 const app = express();
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
