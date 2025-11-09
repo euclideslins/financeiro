@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AppError } from '../shared/errors/AppError';
 import { ApiResponse } from '../types/User';
 
 export const errorHandler = (
@@ -8,6 +9,17 @@ export const errorHandler = (
   next: NextFunction
 ): void => {
   console.error('Error:', error);
+
+  if (error instanceof AppError) {
+    const response: ApiResponse<null> = {
+      message: error.message,
+      success: false,
+      error: error.message
+    };
+
+    res.status(error.statusCode).json(response);
+    return;
+  }
 
   const response: ApiResponse<null> = {
     message: 'Internal server error',
@@ -24,6 +36,6 @@ export const notFoundHandler = (req: Request, res: Response): void => {
     success: false,
     error: 'The requested resource was not found'
   };
-  
+
   res.status(404).json(response);
 };

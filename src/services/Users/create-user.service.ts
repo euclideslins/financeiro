@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { Pool, RowDataPacket } from "mysql2/promise";
 import { redisClient } from "../../config/redis";
 import { pool } from "../../database/connection";
+import { DuplicateEmailError } from '../../shared/errors/AppError';
 import { CreateUserDTO, UserResponse } from "../../types/User";
 import { GetUserService } from './getUser.service';
 
@@ -38,8 +39,13 @@ export class CreateUserService {
             }
 
             return newUser;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating user:', error);
+
+            if (error.code === 'ER_DUP_ENTRY') {
+                throw new DuplicateEmailError(userData.email);
+            }
+
             throw new Error('Failed to create user');
         }
     }

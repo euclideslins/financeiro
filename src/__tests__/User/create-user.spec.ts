@@ -81,7 +81,7 @@ describe("Create User", () => {
         });
 
         await expect(createUserService.createUser(mockUserData))
-            .rejects.toThrow('Failed to create user');
+            .rejects.toThrow('Email john@test.com já está cadastrado');
 
         expect(mockPool.query).toHaveBeenCalledWith(
             'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',

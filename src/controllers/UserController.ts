@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AuthenticationService } from '../services/Authentication/authentication.service';
 import { CreateUserService } from '../services/Users/create-user.service';
 import { DeleteUserService } from '../services/Users/deleteUser.service';
@@ -84,7 +84,7 @@ export class UserController {
     }
   };
 
-  createUser = async (req: Request, res: Response): Promise<void> => {
+  createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { name, email, password } = req.body;
 
@@ -106,13 +106,7 @@ export class UserController {
       };
       res.status(201).json(response);
     } catch (error) {
-      console.error('Error in createUser:', error);
-      const response: ApiResponse<null> = {
-        message: 'Failed to create user',
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-      res.status(500).json(response);
+      next(error);
     }
   };
 
