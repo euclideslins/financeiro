@@ -24,3 +24,10 @@ export class NotFoundError extends AppError {
         Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }
+
+export class DuplicateCategoryError extends AppError {
+    constructor(name: string) {
+        super(`Categoria "${name}" já existe para este usuário`, 400);
+        Object.setPrototypeOf(this, DuplicateCategoryError.prototype);
+    }
+}
