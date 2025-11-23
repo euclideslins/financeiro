@@ -30,6 +30,9 @@ CREATE TABLE accounts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE INDEX idx_accounts_user ON accounts(user_id);
 
+INSERT INTO accounts (user_id, name, type, currency_code, opening_balance_cents)
+VALUES (1, 'Conta Corrente Principal', 'current', 'BRL', 100000);
+
 
 -- 3) CATEGORIES (categorias de receitas e despesas)
 CREATE TABLE categories (
@@ -52,6 +55,15 @@ CREATE TABLE categories (
   -- Indexes
   INDEX idx_categories_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO categories (user_id, parent_id, name, kind)
+VALUES 
+  (1, NULL, 'Salário', 'income'),
+  (1, NULL, 'Moradia', 'expense'),
+  (1, NULL, 'Alimentação', 'expense'),
+  (1, NULL, 'Transporte', 'expense'),
+  (1, NULL, 'Lazer', 'expense'),
+  (1, NULL, 'Contas Fixas', 'expense');
 
 
 ALTER TABLE users ADD UNIQUE INDEX idx_email (email);
@@ -97,6 +109,16 @@ CREATE TABLE transactions (
   INDEX idx_trans_recurring    (is_recurring, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO transactions (user_id, account_id, category_id, type, amount_cents, description, merchant, transaction_date, is_essential, is_recurring, ai_tags)
+VALUES 
+  (1, 1, 5, 'income', 500000, 'Salário do mês', 'Empresa XYZ Ltda', '2025-11-01', NULL, TRUE, '["salary", "monthly"]'),
+  (1, 1, 6, 'expense', 150000, 'Aluguel', 'Imobiliária ABC', '2025-11-05', TRUE, TRUE, '["housing", "essential", "fixed"]'),
+  (1, 1, 7, 'expense', 8500, 'Supermercado', 'Mercado Pague Menos', '2025-11-08', TRUE, FALSE, '["food", "groceries"]'),
+  (1, 1, 8, 'expense', 4500, 'Uber', 'Uber Technologies', '2025-11-10', FALSE, FALSE, '["transport", "ride-sharing"]'),
+  (1, 1, 9, 'expense', 2990, 'Netflix', 'Netflix Inc', '2025-11-15', FALSE, TRUE, '["entertainment", "streaming", "subscription"]'),
+  (1, 1, 10, 'expense', 12000, 'Conta de Luz', 'Companhia Energética', '2025-11-18', TRUE, TRUE, '["utilities", "essential", "electricity"]'),
+  (1, 1, NULL, 'expense', 15000, 'Jantar Restaurante', 'Restaurante Italiano', '2025-11-20', FALSE, FALSE, '["food", "dining", "leisure"]');
+
 
 -- 5) DEBTS (dívidas e financiamentos)
 CREATE TABLE debts (
@@ -131,39 +153,6 @@ CREATE TABLE debts (
   INDEX idx_debts_due_day     (due_day, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-
-CREATE TABLE debts (
-  id                    BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  user_id               BIGINT UNSIGNED NOT NULL,
-  name                  VARCHAR(120) NOT NULL COMMENT 'Ex: Cartão Nubank, Financiamento Carro',
-  
-  total_amount_cents    BIGINT NOT NULL COMMENT 'Valor total da dívida',
-  paid_amount_cents     BIGINT NOT NULL DEFAULT 0 COMMENT 'Quanto já foi pago',
-  interest_rate         DECIMAL(5,2) NULL COMMENT 'Taxa de juros mensal (ex: 2.50 = 2.5%)',
-  monthly_payment_cents BIGINT NULL COMMENT 'Valor da parcela mensal',
-  
-  due_day               TINYINT NULL COMMENT 'Dia do vencimento (1-31)',
-  status                ENUM('active', 'paid', 'renegotiated', 'cancelled') DEFAULT 'active',
-  
-  notes                 TEXT NULL COMMENT 'Observações adicionais',
-  
-  created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at            DATETIME NULL,
-  
-  -- Constraints
-  CONSTRAINT fk_debt_user FOREIGN KEY (user_id) REFERENCES users(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  
-  -- Validações
-  CONSTRAINT chk_debt_amounts CHECK (paid_amount_cents <= total_amount_cents),
-  CONSTRAINT chk_due_day      CHECK (due_day BETWEEN 1 AND 31),
-  
-  -- Indexes
-  INDEX idx_debts_user_status (user_id, status),
-  INDEX idx_debts_due_day     (due_day, status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- 6) AI_ANALYSES (histórico de análises feitas pelo LLM)

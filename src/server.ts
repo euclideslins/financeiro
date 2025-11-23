@@ -7,6 +7,7 @@ import { testConnectionRedis } from './database/connection-redis';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import accountRouter from './routes/account.routes';
 import categoryRouter from './routes/category.routes';
+import transactionsRouter from './routes/transactions.routes';
 import userRouter from './routes/user.routes';
 
 if (!process.env.JWT_SECRET) {
@@ -32,6 +33,7 @@ app.get('/health', (req, res) => {
 app.use('/api/users', userRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/categories', categoryRouter);
+app.use('/api/transactions', transactionsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
